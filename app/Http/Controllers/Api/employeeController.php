@@ -9,9 +9,11 @@ use Illuminate\Support\Facades\Validator;
 
 class employeeController extends Controller
 {
-    public function obtenerEmpleados()
+    public function obtenerEmpleados($page = null)
     {
-        $empleados = Employee::with('area', 'country', 'identification')->get();
+        $perPage = 10;
+
+        $empleados = Employee::with('area', 'country', 'identification')->paginate($perPage, ['*'], 'page', $page);
 
         if ($empleados->isEmpty()) {
             $data = [
@@ -31,6 +33,9 @@ class employeeController extends Controller
 
         return response()->json($data);
     }
+
+
+
 
     public function agregarEmpleado(Request $request)
     {
@@ -109,6 +114,60 @@ class employeeController extends Controller
 
         return response()->json($data);
     }
+
+    public function actualizarEmpleadoId(Request $request, $id)
+    {
+        $empleado = Employee::find($id);
+
+        if (!$empleado) {
+            $data = [
+                'message' => 'Empleado no encontrado',
+                'status' => 404
+            ];
+
+            return response()->json($data, 404);
+        }
+
+        // Eliminar las reglas de validación para identification_id y numero_identificacion
+        $rules = Employee::$rules;
+        unset($rules['identification_id']);
+        unset($rules['numero_identificacion']);
+        unset($rules['correo_electronico']);
+        unset($rules['country_id']);
+        unset($rules['estado']);
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            $data = [
+                'message' => 'Error al validar los datos',
+                'data' => $validator->errors(),
+                'status' => 400
+            ];
+
+            return response()->json($data, 400);
+        }
+
+        $empleado->fill($request->all());
+
+        if (!$empleado->save()) {
+            $data = [
+                'message' => 'Error al actualizar el empleado',
+                'status' => 500
+            ];
+
+            return response()->json($data, 500);
+        }
+
+        $data = [
+            'message' => 'Empleado actualizado',
+            'data' => $empleado,
+            'status' => 200
+        ];
+
+        return response()->json($data);
+    }
+
 
     public function eliminarEmpleadoId($id)
     {

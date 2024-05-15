@@ -17,7 +17,7 @@ Route::get('/identifications', [identificationController::class, 'obtenerTiposId
 Route::get('/countries', [countryController::class, 'obtenerPaises']);
 
 //EMPLOYEES
-Route::get('/employees', [EmployeeController::class, 'obtenerEmpleados']);
+Route::get('/employees/pagination/{page}', [EmployeeController::class, 'obtenerEmpleados']);
 
 Route::post('/employees', [EmployeeController::class, 'agregarEmpleado']);
 
@@ -27,6 +27,4 @@ Route::post('/verify-email', [EmployeeController::class, 'verificarCorreoDuplica
 
 Route::delete('/employees/{id}', [EmployeeController::class, 'eliminarEmpleadoId']);
 
-Route::put('/employees/{id}', function ($id) {
-    return 'Actualizando un empleado';
-});
+Route::put('/employees/{id}',[EmployeeController::class, 'actualizarEmpleadoId']);
